@@ -23,6 +23,13 @@ The ESP8266 Smart Parking App provides real-time updates on parking space availa
 5. **Control Gates**: Toggle the switches to open or close entry and exit gates.
 6. **Refresh Data**: Tap the refresh icon to update the parking status and gate information.
 
+## Demo Video
+
+[![Demo Video](https://img.youtube.com/vi/odxMqw8v5l0/0.jpg)](https://www.youtube.com/watch?v=odxMqw8v5l0)
+
+
+Click on the image above to watch the demo video.
+
 ## Requirements
 
 - Flutter SDK
