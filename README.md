@@ -46,6 +46,10 @@ To get started with this project:
 3. Update the WebSocket server address in the code if necessary.
 4. Run the Flutter application on your preferred device.
 
+### Websocket Server
+- An Esp8266 Websocket Server is available for controlling the Smart Parking System.
+- Repository link: [Smart Parking Server](https://github.com/mazen-salah/smart-parking-webserver)
+
 ## Contributing
 
 Contributions are welcome! If you have any suggestions, improvements, or bug fixes, feel free to open an issue or submit a pull request.
