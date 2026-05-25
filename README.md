@@ -1,59 +1,76 @@
-# ESP8266 Smart Parking App
+# Smart Parking — companion app
 
-This Flutter application serves as a smart parking system interface, allowing users to monitor parking space occupancy and control entry/exit gates using an ESP8266 microcontroller connected via WebSocket.
-
-## Overview
-
-The ESP8266 Smart Parking App provides real-time updates on parking space availability and gate statuses. It communicates with an ESP8266 microcontroller over WebSocket to receive data and send commands for controlling gates. The app interface is designed with simplicity and functionality in mind, offering an intuitive user experience.
+Flutter app for the ESP8266 [Smart Parking firmware](https://github.com/mazen-salah/smart-parking-webserver). Connects over WebSocket, monitors four parking bays in real time, and controls the entry/exit gates.
 
 ## Features
 
-- **Real-time Monitoring**: View the status of parking spaces and gates in real-time.
-- **Parking Space Status**: Each parking space is represented visually, showing whether it is occupied or vacant.
-- **Occupancy Timer**: Track the duration of parking space occupancy.
-- **Gate Control**: Control entry and exit gates with the tap of a button.
-- **Connection Status**: Instantly know whether the app is connected to the ESP8266 device.
+- Real-time bay occupancy with live `H:MM:SS` duration counter
+- Entry / exit gate control via Material switches
+- Connection status indicator with automatic reconnect
+- Pull-to-refresh and explicit snapshot request
+- Responsive layout (2 columns on phones, 4 on tablets)
+- Dark Material 3 theme
 
-## Usage
+## Architecture
 
-1. **Install Dependencies**: Ensure you have the necessary dependencies installed to run Flutter applications.
-2. **Connect to ESP8266**: Make sure your device is connected to the same network as the ESP8266 microcontroller.
-3. **Run the App**: Launch the app on your device.
-4. **Monitor Parking Spaces**: View the status of parking spaces and gates on the main screen.
-5. **Control Gates**: Toggle the switches to open or close entry and exit gates.
-6. **Refresh Data**: Tap the refresh icon to update the parking status and gate information.
+The app follows clean architecture, split into three layers under `lib/`:
 
-## Demo Video
+```
+lib/
+├── main.dart
+├── app/
+│   ├── app.dart                          # MaterialApp + DI wiring
+│   └── theme/app_theme.dart
+├── core/
+│   ├── constants/app_constants.dart
+│   └── utils/duration_formatter.dart
+└── features/parking/
+    ├── data/
+    │   ├── datasources/
+    │   │   └── parking_websocket_datasource.dart   # raw JSON WS transport
+    │   ├── models/
+    │   │   └── parking_update_mapper.dart          # JSON → domain types
+    │   └── repositories/
+    │       └── parking_repository_impl.dart
+    ├── domain/
+    │   ├── entities/                               # ParkingSpace, Gate, ParkingUpdate (sealed)
+    │   └── repositories/parking_repository.dart    # abstract contract
+    └── presentation/
+        ├── bloc/                                   # ParkingBloc + events + state
+        ├── pages/parking_home_page.dart
+        └── widgets/                                # ConnectionStatusCard, ParkingGrid, ...
+```
+
+- **Domain** has no Flutter or transport dependencies — only Dart + Equatable.
+- **Data** implements the domain `ParkingRepository` using a thin WebSocket data source and a mapper that decodes the firmware's [JSON protocol](https://github.com/mazen-salah/smart-parking-webserver/blob/main/docs/PROTOCOL.md).
+- **Presentation** uses [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) to expose `ParkingBlocState` to widgets. The page owns a 1 Hz `Timer` solely for repainting the occupancy duration; the bloc handles reconnects.
+
+## Getting started
+
+```bash
+flutter pub get
+flutter run            # connects to ws://192.168.0.1:81 by default
+flutter test
+flutter analyze
+```
+
+To target a different device, change `AppConstants.websocketUrl` in `lib/core/constants/app_constants.dart`.
+
+## Compatibility
+
+| Tool       | Version           |
+|------------|-------------------|
+| Flutter SDK | ≥ 3.19           |
+| Dart SDK    | ≥ 3.3            |
+
+## Companion firmware
+
+The ESP8266 firmware lives at [mazen-salah/smart-parking-webserver](https://github.com/mazen-salah/smart-parking-webserver). The JSON wire protocol is documented [here](https://github.com/mazen-salah/smart-parking-webserver/blob/main/docs/PROTOCOL.md).
+
+## Demo
 
 [![Demo Video](https://img.youtube.com/vi/odxMqw8v5l0/0.jpg)](https://www.youtube.com/watch?v=odxMqw8v5l0)
 
-
-Click on the image above to watch the demo video.
-
-## Requirements
-
-- Flutter SDK
-- Dart
-- ESP8266 microcontroller
-- WebSocket server running on the ESP8266 (ws://192.168.0.1:81)
-
-## Getting Started
-
-To get started with this project:
-
-1. Clone the repository.
-2. Connect your ESP8266 microcontroller and ensure it's running the WebSocket server.
-3. Update the WebSocket server address in the code if necessary.
-4. Run the Flutter application on your preferred device.
-
-### Websocket Server
-- An Esp8266 Websocket Server is available for controlling the Smart Parking System.
-- Repository link: [Smart Parking Server](https://github.com/mazen-salah/smart-parking-webserver)
-
-## Contributing
-
-Contributions are welcome! If you have any suggestions, improvements, or bug fixes, feel free to open an issue or submit a pull request.
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
